@@ -63,6 +63,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     for (int lifetime = 0; lifetime < maxLifetime; lifetime ++) {
         int nodeX = (int) posX;
         int nodeY = (int) posY;
+        int dropletIndex1 = nodeY * mapSize + nodeX;
         int2 dropletIndex = int2(nodeX, nodeY);
         // Calculate droplet's offset inside the cell (0,0) = at NW node, (1,1) = at SE node
         float cellOffsetX = posX - nodeX;
@@ -110,15 +111,15 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             // Erode a fraction of the droplet's current carry capacity.
             // Clamp the erosion to the change in height so that it doesn't dig a hole in the terrain behind the droplet
             float amountToErode = min ((sedimentCapacity - sediment) * erodeSpeed, -deltaHeight);
-            
-            // for (int i = 0; i < brushLength; i ++) {
-            //     int2 erodeIndex = dropletIndex + brushIndices[i];
-            //
-            //     float weightedErodeAmount = amountToErode * brushWeights[i];
-            //     float deltaSediment = (heightMap[erodeIndex] < weightedErodeAmount) ? heightMap[erodeIndex] : weightedErodeAmount;
-            //     heightMap[erodeIndex] -= deltaSediment;
-            //     sediment += deltaSediment;
-            // }
+
+            for (int i = 0; i < brushLength; i ++) {
+                // int2 erodeIndex = dropletIndex;// + brushIndices[i];
+                //
+                // float weightedErodeAmount = amountToErode * brushWeights[i];
+                float deltaSediment = amountToErode * .01;// (heightMap[erodeIndex] < weightedErodeAmount) ? heightMap[erodeIndex] : weightedErodeAmount;
+                heightMap[dropletIndex] -= deltaSediment;
+                sediment += deltaSediment;
+            }
         }
 
         // Update droplet's speed and water content

@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
+[ExecuteInEditMode]
 public class TerrainGenerator : MonoBehaviour {
 
     public bool printTimers;
@@ -11,7 +14,7 @@ public class TerrainGenerator : MonoBehaviour {
     public float elevationScale = 10;
     public Material material;
 
-    [Header ("Erosion Settings")]
+    [Header("Erosion Settings")] 
     public ComputeShader erosion;
     public int numErosionIterations = 50000;
     public int erosionBrushRadius = 3;
@@ -38,10 +41,25 @@ public class TerrainGenerator : MonoBehaviour {
     MeshFilter meshFilter;
     private static readonly int HeightMap = Shader.PropertyToID("_heightMap");
 
+    [SerializeField]
+    private RenderTexture NormalMap;
+
+    private void Start()
+    {
+        GenerateHeightMap();
+        ContructMesh();
+        Erode();
+    }
+
     public void GenerateHeightMap () {
         mapSizeWithBorder = mapSize + erosionBrushRadius * 2;
         map = FindObjectOfType<HeightMapGenerator> ().GenerateHeightMap (mapSizeWithBorder);
         material.SetTexture(HeightMap, map);
+        var mat = new Material(Shader.Find("Hidden/NormalMap"));
+        mat.SetTexture("_MainTex", map);
+        NormalMap = new RenderTexture(map.width, map.height, 0);
+        Graphics.Blit(map, NormalMap, mat);
+        material.SetTexture("_NormalMap", NormalMap);
     }
 
     public void Erode () {
