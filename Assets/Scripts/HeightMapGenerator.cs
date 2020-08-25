@@ -13,9 +13,11 @@ public class HeightMapGenerator : MonoBehaviour
     // public bool useComputeShader = true;
     public ComputeShader heightMapComputeShader;
 
-    [SerializeField]
     private RenderTexture heightMapTexture;
     public RenderTexture HeightMapTexture => heightMapTexture;
+
+    public Renderer rend;
+
 
     public RenderTexture GenerateHeightMap (int mapSize) {
         return GenerateHeightMapGPU (mapSize);
@@ -39,6 +41,7 @@ public class HeightMapGenerator : MonoBehaviour
         {
             if(heightMapTexture != null && heightMapTexture.IsCreated()) heightMapTexture.Release();
             heightMapTexture = new RenderTexture(size.x, size.y, 0, RenderTextureFormat.RFloat, RenderTextureReadWrite.Linear);
+            heightMapTexture.hideFlags = HideFlags.DontSave;
             heightMapTexture.enableRandomWrite = true;
             heightMapTexture.Create();
         }
@@ -76,6 +79,9 @@ public class HeightMapGenerator : MonoBehaviour
         // for (int i = 0; i < map.Length; i++) {
         //     map[i] = Mathf.InverseLerp (minValue, maxValue, map[i]);
         // }
+
+
+        rend.sharedMaterial.mainTexture = heightMapTexture;
         
         return heightMapTexture;
     }

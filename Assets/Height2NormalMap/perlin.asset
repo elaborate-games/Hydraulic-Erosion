@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e58b9fca77c96c4ba62fe19246b96cd, type: 3}
+  m_Name: perlin
+  m_EditorClassIdentifier: 
+  generator:
+    generator:
+      baseHeightMap: {fileID: 2800000, guid: 2ae6498adf645e7478b9f57da2ca1799, type: 3}
+      "\u0441ombiner":
+        mode: 0
+      overideNormalMap: {fileID: 0}
+      normalMap:
+        preBlur:
+          iteration: 0
+          sampleFactor: 1
+        normalMap:
+          bumpEffect: 0.5
+        postBlur:
+          iteration: 1
+          sampleFactor: 1
+      overideHeightMap: {fileID: 0}
+      heightMap:
+        preBlur:
+          iteration: 0
+          sampleFactor: 1
+        heigthMap:
+          factor: 1
+        postBlur:
+          iteration: 0
+          sampleFactor: 1
+    destinationMap: {fileID: 2800000, guid: 529472b441db0d14b8731fa0f0ebe1ec, type: 3}
+    customDestinationWidth: 0
+    customDestinationHeight: 0
+  editGenerator:
+    generator:
+      baseHeightMap: {fileID: 2800000, guid: 2ae6498adf645e7478b9f57da2ca1799, type: 3}
+      "\u0441ombiner":
+        mode: 0
+      overideNormalMap: {fileID: 0}
+      normalMap:
+        preBlur:
+          iteration: 0
+          sampleFactor: 1
+        normalMap:
+          bumpEffect: 0.5
+        postBlur:
+          iteration: 1
+          sampleFactor: 1
+      overideHeightMap: {fileID: 0}
+      heightMap:
+        preBlur:
+          iteration: 0
+          sampleFactor: 1
+        heigthMap:
+          factor: 1
+        postBlur:
+          iteration: 0
+          sampleFactor: 1
+    destinationMap: {fileID: 2800000, guid: 529472b441db0d14b8731fa0f0ebe1ec, type: 3}
+    customDestinationWidth: 0
+    customDestinationHeight: 0
+  showPreview: 1

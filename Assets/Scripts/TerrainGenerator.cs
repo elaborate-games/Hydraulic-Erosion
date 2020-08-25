@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using Random = UnityEngine.Random;
 
-[ExecuteInEditMode]
+[ExecuteAlways]
 public class TerrainGenerator : MonoBehaviour {
 
     public bool printTimers;
@@ -39,10 +40,9 @@ public class TerrainGenerator : MonoBehaviour {
 
     MeshRenderer meshRenderer;
     MeshFilter meshFilter;
-    private static readonly int HeightMap = Shader.PropertyToID("_heightMap");
 
-    [SerializeField]
     private RenderTexture NormalMap;
+    public Renderer Rend;
 
     private void Start()
     {
@@ -53,12 +53,25 @@ public class TerrainGenerator : MonoBehaviour {
 
     public void GenerateHeightMap () {
         mapSizeWithBorder = mapSize + erosionBrushRadius * 2;
-        map = FindObjectOfType<HeightMapGenerator> ().GenerateHeightMap (mapSizeWithBorder);
-        material.SetTexture(HeightMap, map);
+        map = FindObjectOfType<HeightMapGenerator> ().GenerateHeightMap (mapSize);
+        material.SetTexture("_heightMap", map);
+        UpdateNormalMap();
+    }
+
+    private void UpdateNormalMap()
+    {
         var mat = new Material(Shader.Find("Hidden/NormalMap"));
         mat.SetTexture("_MainTex", map);
+        var bumpEffect = 1;
+        float v = bumpEffect * 2f - 1f;
+        float z = 1f - v;
+        float xy = 1f + v;
+        mat.SetVector("_Factor", new Vector4(xy, xy, z, 1));
         NormalMap = new RenderTexture(map.width, map.height, 0);
+        NormalMap.hideFlags = HideFlags.DontSave;
+        NormalMap.Create();
         Graphics.Blit(map, NormalMap, mat);
+        Rend.sharedMaterial.mainTexture = NormalMap;
         material.SetTexture("_NormalMap", NormalMap);
     }
 
@@ -136,6 +149,8 @@ public class TerrainGenerator : MonoBehaviour {
         randomIndexBuffer.Release ();
         brushIndexBuffer.Release ();
         brushWeightBuffer.Release ();
+        
+        UpdateNormalMap();
     }
 
     public void ContructMesh () {
@@ -157,7 +172,7 @@ public class TerrainGenerator : MonoBehaviour {
             // float normalizedHeight = map[borderedMapIndex];
             // pos += Vector3.up * normalizedHeight * elevationScale;
             verts[meshMapIndex] = pos;
-            uvs[meshMapIndex] = percent;
+            uvs[meshMapIndex] = percent;// new Vector2(percent.y, percent.x);
 
             // Construct triangles
             if (x != mapSize - 1 && y != mapSize - 1) {
@@ -179,6 +194,7 @@ public class TerrainGenerator : MonoBehaviour {
         } else {
             mesh.Clear ();
         }
+        mesh.hideFlags = HideFlags.DontSaveInEditor;
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         mesh.vertices = verts;
         mesh.triangles = triangles;
