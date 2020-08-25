@@ -30,20 +30,22 @@ public class TerrainGenerator : MonoBehaviour {
     public float inertia = 0.3f;
 
     // Internal
-    float[] map;
+    RenderTexture map;
     Mesh mesh;
     int mapSizeWithBorder;
 
     MeshRenderer meshRenderer;
     MeshFilter meshFilter;
+    private static readonly int HeightMap = Shader.PropertyToID("_heightMap");
 
     public void GenerateHeightMap () {
         mapSizeWithBorder = mapSize + erosionBrushRadius * 2;
         map = FindObjectOfType<HeightMapGenerator> ().GenerateHeightMap (mapSizeWithBorder);
+        material.SetTexture(HeightMap, map);
     }
 
     public void Erode () {
-        int numThreads = numErosionIterations / 1024;
+        int numThreads = Mathf.CeilToInt(numErosionIterations / 1024f);
 
         // Create brush
         List<int> brushIndexOffsets = new List<int> ();
@@ -87,9 +89,10 @@ public class TerrainGenerator : MonoBehaviour {
         erosion.SetBuffer (0, "randomIndices", randomIndexBuffer);
 
         // Heightmap buffer
-        ComputeBuffer mapBuffer = new ComputeBuffer (map.Length, sizeof (float));
-        mapBuffer.SetData (map);
-        erosion.SetBuffer (0, "map", mapBuffer);
+        // ComputeBuffer mapBuffer = new ComputeBuffer (map.Length, sizeof (float));
+        // mapBuffer.SetData (map);
+        // erosion.SetBuffer (0, "map", mapBuffer);
+        erosion.SetTexture(0, "heightMap", map);
 
         // Settings
         erosion.SetInt ("borderSize", erosionBrushRadius);
@@ -108,10 +111,10 @@ public class TerrainGenerator : MonoBehaviour {
 
         // Run compute shader
         erosion.Dispatch (0, numThreads, 1, 1);
-        mapBuffer.GetData (map);
+        // mapBuffer.GetData (map);
 
         // Release buffers
-        mapBuffer.Release ();
+        // mapBuffer.Release ();
         randomIndexBuffer.Release ();
         brushIndexBuffer.Release ();
         brushWeightBuffer.Release ();
@@ -121,6 +124,8 @@ public class TerrainGenerator : MonoBehaviour {
         Vector3[] verts = new Vector3[mapSize * mapSize];
         int[] triangles = new int[(mapSize - 1) * (mapSize - 1) * 6];
         int t = 0;
+        
+        Vector2[] uvs = new Vector2[verts.Length];
 
         for (int i = 0; i < mapSize * mapSize; i++) {
             int x = i % mapSize;
@@ -131,9 +136,10 @@ public class TerrainGenerator : MonoBehaviour {
             Vector2 percent = new Vector2 (x / (mapSize - 1f), y / (mapSize - 1f));
             Vector3 pos = new Vector3 (percent.x * 2 - 1, 0, percent.y * 2 - 1) * scale;
 
-            float normalizedHeight = map[borderedMapIndex];
-            pos += Vector3.up * normalizedHeight * elevationScale;
+            // float normalizedHeight = map[borderedMapIndex];
+            // pos += Vector3.up * normalizedHeight * elevationScale;
             verts[meshMapIndex] = pos;
+            uvs[meshMapIndex] = percent;
 
             // Construct triangles
             if (x != mapSize - 1 && y != mapSize - 1) {
@@ -158,6 +164,7 @@ public class TerrainGenerator : MonoBehaviour {
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         mesh.vertices = verts;
         mesh.triangles = triangles;
+        mesh.uv = uvs;
         mesh.RecalculateNormals ();
 
         AssignMeshComponents ();
@@ -167,7 +174,7 @@ public class TerrainGenerator : MonoBehaviour {
         material.SetFloat ("_MaxHeight", elevationScale);
     }
 
-    void AssignMeshComponents () {
+    private void AssignMeshComponents () {
         // Find/creator mesh holder object in children
         string meshHolderName = "Mesh Holder";
         Transform meshHolder = transform.Find (meshHolderName);

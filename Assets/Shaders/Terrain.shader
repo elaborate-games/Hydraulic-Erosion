@@ -9,8 +9,8 @@
     {
         Tags { "RenderType"="Opaque" }
         CGPROGRAM
-        #pragma surface surf Standard fullforwardshadows
-        #pragma target 3.0
+        #pragma surface surf Standard fullforwardshadows vertex:vert
+        #pragma target 5.0
 
         struct Input {
             float3 worldPos;
@@ -22,6 +22,13 @@
         half _GrassBlendAmount;
         fixed4 _GrassColour;
         fixed4 _RockColour;
+
+        sampler2D _heightMap;
+        
+        void vert (inout appdata_full v) {
+          float height = tex2Dlod(_heightMap, v.texcoord);
+          v.vertex.xyz += v.normal * height * 5;
+      }
 
         void surf (Input IN, inout SurfaceOutputStandard o) {
             float slope = 1-IN.worldNormal.y; // slope = 0 when terrain is completely flat

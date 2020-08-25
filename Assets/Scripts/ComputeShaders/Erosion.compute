@@ -1,6 +1,7 @@
 ﻿#pragma kernel CSMain
 
-RWStructuredBuffer<float> map;
+// RWStructuredBuffer<float> map;
+RWTexture2D<float> heightMap;
 StructuredBuffer<int> randomIndices;
 StructuredBuffer<int> brushIndices;
 StructuredBuffer<float> brushWeights;
@@ -32,10 +33,10 @@ float3 CalculateHeightAndGradient (float posX, float posY) {
 
     // Calculate heights of the four nodes of the droplet's cell
     int nodeIndexNW = coordY * mapSize + coordX;
-    float heightNW = map[nodeIndexNW];
-    float heightNE = map[nodeIndexNW + 1];
-    float heightSW = map[nodeIndexNW + mapSize];
-    float heightSE = map[nodeIndexNW + mapSize + 1];
+    float heightNW = heightMap[int2(coordX-1, coordY+1)];
+    float heightNE = heightMap[int2(coordX+1, coordY+1)];
+    float heightSW = heightMap[int2(coordX-1, coordY-1)];
+    float heightSE = heightMap[int2(coordX+1, coordY-1)];
 
     // Calculate droplet's direction of flow with bilinear interpolation of height difference along the edges
     float gradientX = (heightNE - heightNW) * (1 - y) + (heightSE - heightSW) * y;
@@ -51,7 +52,7 @@ float3 CalculateHeightAndGradient (float posX, float posY) {
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     int index = randomIndices[id.x];
-    float posX = float(index)%mapSize;
+    float posX = float(index%mapSize);
     float posY = float(index)/mapSize;
     float dirX = 0;
     float dirY = 0;
@@ -62,7 +63,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     for (int lifetime = 0; lifetime < maxLifetime; lifetime ++) {
         int nodeX = (int) posX;
         int nodeY = (int) posY;
-        int dropletIndex = nodeY * mapSize + nodeX;
+        int2 dropletIndex = int2(nodeX, nodeY);
         // Calculate droplet's offset inside the cell (0,0) = at NW node, (1,1) = at SE node
         float cellOffsetX = posX - nodeX;
         float cellOffsetY = posY - nodeY;
@@ -100,24 +101,24 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
             // Add the sediment to the four nodes of the current cell using bilinear interpolation
             // Deposition is not distributed over a radius (like erosion) so that it can fill small pits
-            map[dropletIndex] += amountToDeposit * (1 - cellOffsetX) * (1 - cellOffsetY);
-            map[dropletIndex + 1] += amountToDeposit * cellOffsetX * (1 - cellOffsetY);
-            map[dropletIndex + mapSize] += amountToDeposit * (1 - cellOffsetX) * cellOffsetY;
-            map[dropletIndex + mapSize + 1] += amountToDeposit * cellOffsetX * cellOffsetY;
+            heightMap[dropletIndex] += amountToDeposit * (1 - cellOffsetX) * (1 - cellOffsetY);
+            heightMap[dropletIndex + 1] += amountToDeposit * cellOffsetX * (1 - cellOffsetY);
+            heightMap[dropletIndex + mapSize] += amountToDeposit * (1 - cellOffsetX) * cellOffsetY;
+            heightMap[dropletIndex + mapSize + 1] += amountToDeposit * cellOffsetX * cellOffsetY;
         }
         else {
             // Erode a fraction of the droplet's current carry capacity.
             // Clamp the erosion to the change in height so that it doesn't dig a hole in the terrain behind the droplet
             float amountToErode = min ((sedimentCapacity - sediment) * erodeSpeed, -deltaHeight);
             
-            for (int i = 0; i < brushLength; i ++) {
-                int erodeIndex = dropletIndex + brushIndices[i];
-
-                float weightedErodeAmount = amountToErode * brushWeights[i];
-                float deltaSediment = (map[erodeIndex] < weightedErodeAmount) ? map[erodeIndex] : weightedErodeAmount;
-                map[erodeIndex] -= deltaSediment;
-                sediment += deltaSediment;
-            }
+            // for (int i = 0; i < brushLength; i ++) {
+            //     int2 erodeIndex = dropletIndex + brushIndices[i];
+            //
+            //     float weightedErodeAmount = amountToErode * brushWeights[i];
+            //     float deltaSediment = (heightMap[erodeIndex] < weightedErodeAmount) ? heightMap[erodeIndex] : weightedErodeAmount;
+            //     heightMap[erodeIndex] -= deltaSediment;
+            //     sediment += deltaSediment;
+            // }
         }
 
         // Update droplet's speed and water content

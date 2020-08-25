@@ -1,6 +1,7 @@
 ﻿#pragma kernel CSMain
 
-RWStructuredBuffer<float> heightMap;
+RWTexture2D<float> heightMapTexture;
+// RWStructuredBuffer<float> heightMap;
 RWStructuredBuffer<int> minMax;
 StructuredBuffer<float2> offsets;
 int floatToIntMultiplier;
@@ -100,20 +101,20 @@ float snoise(float2 v)
 }
 
 
-[numthreads(64,1,1)]
+[numthreads(32,32,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    int x = id.x % mapSize;
-    int y = id.x / mapSize;
+    int x = id.x;// % mapSize;
+    int y = id.y;// / mapSize;
 
     float scale = scaleFactor;
     float weight = 1;
     for (int i = 0; i < octaves; i ++) {
-        heightMap[id.x] += snoise(float2(x,y)/mapSize * scale + offsets[i]) * weight;
+        heightMapTexture[id.xy] += snoise(float2(x,y)/mapSize * scale + offsets[i]) * weight;
         scale *= lacunarity;
         weight *= persistence;
     }
-    int val = int(heightMap[id.x] * floatToIntMultiplier);
+    int val = int(heightMapTexture[id.xy] * floatToIntMultiplier);
     InterlockedMin(minMax[0],val);
     InterlockedMax(minMax[1],val); 
 }
