@@ -1,0 +1,13 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Rider ignored files
+/modules.xml
+/contentModel.xml
+/projectSettingsUpdater.xml
+/.idea.Hydraulic-Erosion-Elaborate.iml
+# Datasource local storage ignored files
+/../../../../../../:\git\Hydraulic-Erosion-Elaborate\.idea\.idea.Hydraulic-Erosion-Elaborate\.idea/dataSources/
+/dataSources.local.xml
+# Editor-based HTTP Client requests
+/httpRequests/

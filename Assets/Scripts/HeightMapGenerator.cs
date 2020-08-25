@@ -49,7 +49,7 @@ public class HeightMapGenerator : MonoBehaviour {
         heightMapComputeShader.SetFloat ("scaleFactor", initialScale);
         heightMapComputeShader.SetInt ("floatToIntMultiplier", floatToIntMultiplier);
 
-        heightMapComputeShader.Dispatch (0, map.Length, 1, 1);
+        heightMapComputeShader.Dispatch (0, Mathf.CeilToInt(map.Length/64f), 1, 1);
 
         mapBuffer.GetData (map);
         minMaxBuffer.GetData (minMaxHeight);
