@@ -10,14 +10,11 @@ public class HeightMapGenerator : MonoBehaviour
     public float lacunarity = 2;
     public float initialScale = 2;
 
-    // public bool useComputeShader = true;
     public ComputeShader heightMapComputeShader;
 
     private RenderTexture heightMapTexture;
     public RenderTexture HeightMapTexture => heightMapTexture;
-
-    public Renderer rend;
-
+    
 
     public RenderTexture GenerateHeightMap (int mapSize) {
         return GenerateHeightMapGPU (mapSize);
@@ -79,9 +76,6 @@ public class HeightMapGenerator : MonoBehaviour
         // for (int i = 0; i < map.Length; i++) {
         //     map[i] = Mathf.InverseLerp (minValue, maxValue, map[i]);
         // }
-
-
-        rend.sharedMaterial.mainTexture = heightMapTexture;
         
         return heightMapTexture;
     }

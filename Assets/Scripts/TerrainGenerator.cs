@@ -44,11 +44,7 @@ public class TerrainGenerator : MonoBehaviour {
     MeshRenderer meshRenderer;
     MeshFilter meshFilter;
 
-    private RenderTexture NormalMap;
-    public Renderer Rend;
-    public Texture HeightMap;
-    public bool UseHeight2NormalSoebel = false;
-    [Range(0,1)]
+    public RenderTexture NormalMap { get; private set; }
     public float BumpEffect = .5f;
 
     public GaussianBlurFilter Blur;
@@ -64,7 +60,6 @@ public class TerrainGenerator : MonoBehaviour {
     {
         mapSizeWithBorder = mapSize + erosionBrushRadius * 2;
         map = FindObjectOfType<HeightMapGenerator> ().GenerateHeightMap (mapSize);
-        if (HeightMap) Graphics.Blit(HeightMap, map);
         Blur.Apply(map, map);
         material.SetTexture("_heightMap", map);
         UpdateNormalMap();
@@ -81,18 +76,7 @@ public class TerrainGenerator : MonoBehaviour {
         NormalMap = new RenderTexture(map.width, map.height, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
         NormalMap.hideFlags = HideFlags.DontSave;
         NormalMap.Create();
-        if (UseHeight2NormalSoebel)
-        {
-            Debug.Log("sobel");
-            var sobel = new SobelNormalMapFilter() {bumpEffect = BumpEffect};
-            sobel.Apply(map, NormalMap);
-        }
-        else
-        {
-            Debug.Log(mat.shader.name);
-            Graphics.Blit(map, NormalMap, mat);
-        }
-        Rend.sharedMaterial.mainTexture = NormalMap;
+        Graphics.Blit(map, NormalMap, mat);
         material.SetTexture("_NormalMap", NormalMap);
     }
 

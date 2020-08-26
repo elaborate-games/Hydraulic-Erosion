@@ -2,7 +2,7 @@
 namespace Height2NormalMap
 {
     [System.Serializable]
-    public struct GaussianBlurFilter : IFilter
+    public struct GaussianBlurFilter
     {
         [Range(0, 50)]
         public int iteration;

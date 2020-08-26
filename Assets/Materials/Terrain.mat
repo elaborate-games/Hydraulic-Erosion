@@ -65,8 +65,8 @@ Material:
     - _GlossyReflections: 1
     - _GrassBlendAmount: 1
     - _GrassFlatnessThreshold: 0.1
-    - _GrassSlopeThreshold: 0.295
-    - _HeightScale: 1
+    - _GrassSlopeThreshold: 0.083
+    - _HeightScale: 13.67
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
