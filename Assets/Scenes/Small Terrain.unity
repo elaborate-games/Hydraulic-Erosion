@@ -427,12 +427,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   printTimers: 1
   meshResolution: 256
-  mapSize: 4096
+  mapSize: 1024
   scale: 20
   material: {fileID: 2100000, guid: 9c78fd2a4616142389a98dbdd2670aaa, type: 2}
   erosion: {fileID: 7200000, guid: 3d22ccb65deb342569720aedadddf958, type: 3}
-  numErosionIterations: 50000
-  erosionBrushRadius: 3
+  numErosionIterations: 500000
+  erosionBrushRadius: 5
   maxLifetime: 30
   sedimentCapacityFactor: 4
   minSedimentCapacity: 0.01
@@ -443,10 +443,10 @@ MonoBehaviour:
   startSpeed: 1
   startWater: 1
   inertia: 0.05
-  BumpEffect: 0.855
+  BumpEffect: 0.849
   Blur:
-    iteration: 6
-    sampleFactor: 1
+    iteration: 2
+    sampleFactor: 0.2
 --- !u!4 &1074406448
 Transform:
   m_ObjectHideFlags: 0

@@ -79,7 +79,7 @@ public class TerrainGenerator : MonoBehaviour {
         if (NormalMap == null || NormalMap.width != map.width || NormalMap.height != map.height)
         {
             if(NormalMap != null && NormalMap.IsCreated()) NormalMap.Release();
-            NormalMap = new RenderTexture(map.width, map.height, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
+            NormalMap = new RenderTexture(map.width, map.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
             NormalMap.hideFlags = HideFlags.DontSave;
             NormalMap.Create();
         }
@@ -112,6 +112,13 @@ public class TerrainGenerator : MonoBehaviour {
         }
         for (int i = 0; i < brushWeights.Count; i++) {
             brushWeights[i] /= weightSum;
+        }
+
+        Debug.Log("Brush weights: " + brushWeights.Count);
+        if (brushWeights.Count > 500)
+        {
+            Debug.Log("Reduce brush radius to < 500, current: " + brushWeights.Count);
+            return;
         }
 
         // Send brush data to compute shader
