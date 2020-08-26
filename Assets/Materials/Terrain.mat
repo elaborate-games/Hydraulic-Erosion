@@ -63,10 +63,10 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0
     - _GlossyReflections: 1
-    - _GrassBlendAmount: 0.309
+    - _GrassBlendAmount: 1
     - _GrassFlatnessThreshold: 0.1
-    - _GrassSlopeThreshold: 0.01
-    - _HeightScale: 0
+    - _GrassSlopeThreshold: 0.295
+    - _HeightScale: 1
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
@@ -79,7 +79,7 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _GrassColour: {r: 0.30831054, g: 0.33962262, b: 0, a: 1}
+    - _GrassColour: {r: 0.40589362, g: 0.4433962, b: 0.035555363, a: 1}
     - _GrassColour2: {r: 0.08072188, g: 0.11320752, b: 0, a: 1}
     - _RockColour: {r: 0.23584908, g: 0.11488772, b: 0.070087224, a: 1}
     - _RockColour2: {r: 0.254717, g: 0.11335015, b: 0.054067295, a: 1}

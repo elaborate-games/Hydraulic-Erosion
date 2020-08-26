@@ -68,7 +68,7 @@ public class HeightMapGenerator : MonoBehaviour
         heightMapComputeShader.Dispatch (0, tx, ty,  1);
 
         // mapBuffer.GetData (map);
-        minMaxBuffer.GetData (minMaxHeight);
+        // minMaxBuffer.GetData (minMaxHeight);
         // mapBuffer.Release ();
         minMaxBuffer.Release ();
         offsetsBuffer.Release ();

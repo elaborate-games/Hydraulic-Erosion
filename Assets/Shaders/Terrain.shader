@@ -43,7 +43,7 @@
 			UNITY_INITIALIZE_OUTPUT(Input, o);
 
 			o.texcoord = v.texcoord;
-			
+
 			float height = tex2Dlod(_heightMap, v.texcoord);
 			v.vertex.xyz += v.normal * height * _HeightScale;
 		}

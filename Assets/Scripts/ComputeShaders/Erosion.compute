@@ -1,7 +1,7 @@
 ﻿#pragma kernel CSMain
 
 // RWStructuredBuffer<float> map;
-RWTexture2D<float4> heightMap;
+RWTexture2D<float> heightMap;
 StructuredBuffer<int> randomIndices;
 StructuredBuffer<int> brushIndices;
 StructuredBuffer<float> brushWeights;
@@ -102,9 +102,9 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
             // Add the sediment to the four nodes of the current cell using bilinear interpolation
             // Deposition is not distributed over a radius (like erosion) so that it can fill small pits
-            heightMap[dropletIndex + int2(-1,+1)] += amountToDeposit * (1 - cellOffsetX) * (1 - cellOffsetY);
-            heightMap[dropletIndex + int2(1,1)] += amountToDeposit * cellOffsetX * (1 - cellOffsetY);
-            heightMap[dropletIndex + int2(-1,-1)] += amountToDeposit * (1 - cellOffsetX) * cellOffsetY;
+            heightMap[dropletIndex] += amountToDeposit * (1 - cellOffsetX) * (1 - cellOffsetY);
+            heightMap[dropletIndex + int2(1,0)] += amountToDeposit * cellOffsetX * (1 - cellOffsetY);
+            heightMap[dropletIndex + int2(0,-1)] += amountToDeposit * (1 - cellOffsetX) * cellOffsetY;
             heightMap[dropletIndex + int2(1,-1)] += amountToDeposit * cellOffsetX * cellOffsetY;
         }
         else {
@@ -113,11 +113,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             float amountToErode = min ((sedimentCapacity - sediment) * erodeSpeed, -deltaHeight);
 
             for (int i = 0; i < brushLength; i ++) {
-                // int2 erodeIndex = dropletIndex;// + brushIndices[i];
-                //
-                // float weightedErodeAmount = amountToErode * brushWeights[i];
-                float deltaSediment = amountToErode * .001;// (heightMap[erodeIndex] < weightedErodeAmount) ? heightMap[erodeIndex] : weightedErodeAmount;
-                heightMap[dropletIndex] -= deltaSediment;
+                int brushIndex = brushIndices[i];
+                int2 heightIndex = int2(brushIndex % mapSize, brushIndex / mapSize);
+                
+                float weightedErodeAmount = amountToErode * brushWeights[i];
+                float deltaSediment = (heightMap[heightIndex] < weightedErodeAmount) ? heightMap[heightIndex] : weightedErodeAmount;
+                heightMap[heightIndex] -= deltaSediment;
                 sediment += deltaSediment;
             }
         }

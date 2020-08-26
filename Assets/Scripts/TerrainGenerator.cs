@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Principal;
 using Height2NormalMap;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
@@ -11,6 +12,7 @@ public class TerrainGenerator : MonoBehaviour {
     public bool printTimers;
 
     [Header ("Mesh Settings")]
+    public int meshResolution = 255;
     public int mapSize = 255;
     public float scale = 20;
     public float elevationScale = 10;
@@ -49,6 +51,8 @@ public class TerrainGenerator : MonoBehaviour {
     [Range(0,1)]
     public float BumpEffect = .5f;
 
+    public GaussianBlurFilter Blur;
+
     private void Start()
     {
         GenerateHeightMap();
@@ -60,14 +64,14 @@ public class TerrainGenerator : MonoBehaviour {
     {
         mapSizeWithBorder = mapSize + erosionBrushRadius * 2;
         map = FindObjectOfType<HeightMapGenerator> ().GenerateHeightMap (mapSize);
+        if (HeightMap) Graphics.Blit(HeightMap, map);
+        Blur.Apply(map, map);
         material.SetTexture("_heightMap", map);
         UpdateNormalMap();
     }
 
     private void UpdateNormalMap()
     {
-        if (HeightMap) Graphics.Blit(HeightMap, map);
-        
         var mat = new Material(Shader.Find("Hidden/NormalMap"));
         var bumpEffect = BumpEffect;
         float v = bumpEffect * 2f - 1f;
@@ -92,9 +96,12 @@ public class TerrainGenerator : MonoBehaviour {
         material.SetTexture("_NormalMap", NormalMap);
     }
 
-    public void Erode () {
-        int numThreads = Mathf.CeilToInt(numErosionIterations / 1024f);
-
+    public void Erode ()
+    {
+        var erodeKernel = erosion.FindKernel("CSMain");
+        var packKernel = erosion.FindKernel("CSPackHeight");
+        var unpackKernel = erosion.FindKernel("CSUnPackHeight");
+        
         // Create brush
         List<int> brushIndexOffsets = new List<int> ();
         List<float> brushWeights = new List<float> ();
@@ -134,17 +141,17 @@ public class TerrainGenerator : MonoBehaviour {
         // Send random indices to compute shader
         ComputeBuffer randomIndexBuffer = new ComputeBuffer (randomIndices.Length, sizeof (int));
         randomIndexBuffer.SetData (randomIndices);
-        erosion.SetBuffer (0, "randomIndices", randomIndexBuffer);
+        // erosion.SetBuffer (packKernel, "randomIndices", randomIndexBuffer);
+        erosion.SetBuffer (erodeKernel, "randomIndices", randomIndexBuffer);
+        // erosion.SetBuffer (unpackKernel, "randomIndices", randomIndexBuffer);
 
         // Heightmap buffer
-        // ComputeBuffer mapBuffer = new ComputeBuffer (map.Length, sizeof (float));
-        // mapBuffer.SetData (map);
-        // erosion.SetBuffer (0, "map", mapBuffer);
-        erosion.SetTexture(0, "heightMap", map);
+        ComputeBuffer mapBuffer = new ComputeBuffer (map.width*map.height, sizeof (float));
+        erosion.SetBuffer (erodeKernel, "map", mapBuffer);
 
         // Settings
         erosion.SetInt ("borderSize", erosionBrushRadius);
-        erosion.SetInt ("mapSize", mapSizeWithBorder);
+        erosion.SetInt ("mapSize", mapSize);
         erosion.SetInt ("brushLength", brushIndexOffsets.Count);
         erosion.SetInt ("maxLifetime", maxLifetime);
         erosion.SetFloat ("inertia", inertia);
@@ -157,12 +164,27 @@ public class TerrainGenerator : MonoBehaviour {
         erosion.SetFloat ("startSpeed", startSpeed);
         erosion.SetFloat ("startWater", startWater);
 
-        // Run compute shader
-        erosion.Dispatch (0, numThreads, 1, 1);
-        // mapBuffer.GetData (map);
+        erosion.SetBuffer (packKernel, "map", mapBuffer);
+        erosion.SetTexture(packKernel, "heightTexture", map);
+        erosion.SetBuffer (unpackKernel, "map", mapBuffer);
+        erosion.SetTexture(unpackKernel, "heightTexture", map);
+        
+        Debug.Log(map.width + ", " + map.height + ", " + mapSize + ", " + mapSizeWithBorder);
+        
+        var threadsPackingX = Mathf.CeilToInt(map.width / 32f);
+        var threadsPackingY = Mathf.CeilToInt(map.height / 32f);
+        
+        // pack
+        erosion.Dispatch(packKernel, threadsPackingX, threadsPackingY, 1);
+        
+        var erodeThreads = Mathf.CeilToInt(numErosionIterations / 1024f);
+        erosion.Dispatch (erodeKernel, erodeThreads, 1, 1);
+        
+        // unpack
+        erosion.Dispatch(unpackKernel, threadsPackingX, threadsPackingY, 1);
 
         // Release buffers
-        // mapBuffer.Release ();
+        mapBuffer.Release ();
         randomIndexBuffer.Release ();
         brushIndexBuffer.Release ();
         brushWeightBuffer.Release ();
@@ -170,20 +192,21 @@ public class TerrainGenerator : MonoBehaviour {
         UpdateNormalMap();
     }
 
-    public void ContructMesh () {
-        Vector3[] verts = new Vector3[mapSize * mapSize];
-        int[] triangles = new int[(mapSize - 1) * (mapSize - 1) * 6];
+    public void ContructMesh () 
+    {
+        Vector3[] verts = new Vector3[meshResolution * meshResolution];
+        int[] triangles = new int[(meshResolution - 1) * (meshResolution-1) * 6];
         int t = 0;
         
         Vector2[] uvs = new Vector2[verts.Length];
 
-        for (int i = 0; i < mapSize * mapSize; i++) {
-            int x = i % mapSize;
-            int y = i / mapSize;
+        for (int i = 0; i < meshResolution * meshResolution; i++) {
+            int x = i % meshResolution;
+            int y = i / meshResolution;
             int borderedMapIndex = (y + erosionBrushRadius) * mapSizeWithBorder + x + erosionBrushRadius;
-            int meshMapIndex = y * mapSize + x;
+            int meshMapIndex = y * meshResolution + x;
 
-            Vector2 percent = new Vector2 (x / (mapSize - 1f), y / (mapSize - 1f));
+            Vector2 percent = new Vector2 (x / (meshResolution - 1f), y / (meshResolution - 1f));
             Vector3 pos = new Vector3 (percent.x * 2 - 1, 0, percent.y * 2 - 1) * scale;
 
             // float normalizedHeight = map[borderedMapIndex];
@@ -192,14 +215,14 @@ public class TerrainGenerator : MonoBehaviour {
             uvs[meshMapIndex] = percent;// new Vector2(percent.y, percent.x);
 
             // Construct triangles
-            if (x != mapSize - 1 && y != mapSize - 1) {
-                t = (y * (mapSize - 1) + x) * 3 * 2;
+            if (x != meshResolution - 1 && y != meshResolution - 1) {
+                t = (y * (meshResolution - 1) + x) * 3 * 2;
 
-                triangles[t + 0] = meshMapIndex + mapSize;
-                triangles[t + 1] = meshMapIndex + mapSize + 1;
+                triangles[t + 0] = meshMapIndex + meshResolution;
+                triangles[t + 1] = meshMapIndex + meshResolution + 1;
                 triangles[t + 2] = meshMapIndex;
 
-                triangles[t + 3] = meshMapIndex + mapSize + 1;
+                triangles[t + 3] = meshMapIndex + meshResolution + 1;
                 triangles[t + 4] = meshMapIndex + 1;
                 triangles[t + 5] = meshMapIndex;
                 t += 6;

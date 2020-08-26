@@ -478,6 +478,9 @@ MonoBehaviour:
   HeightMap: {fileID: 2800000, guid: 2ae6498adf645e7478b9f57da2ca1799, type: 3}
   UseHeight2NormalSoebel: 0
   BumpEffect: 0.868
+  Blur:
+    iteration: 1
+    sampleFactor: 0.2
 --- !u!4 &1074406448
 Transform:
   m_ObjectHideFlags: 0
