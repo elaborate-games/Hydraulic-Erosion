@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Height2NormalMap;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using Random = UnityEngine.Random;
@@ -43,6 +44,10 @@ public class TerrainGenerator : MonoBehaviour {
 
     private RenderTexture NormalMap;
     public Renderer Rend;
+    public Texture HeightMap;
+    public bool UseHeight2NormalSoebel = false;
+    [Range(0,1)]
+    public float BumpEffect = .5f;
 
     private void Start()
     {
@@ -51,7 +56,8 @@ public class TerrainGenerator : MonoBehaviour {
         Erode();
     }
 
-    public void GenerateHeightMap () {
+    public void GenerateHeightMap () 
+    {
         mapSizeWithBorder = mapSize + erosionBrushRadius * 2;
         map = FindObjectOfType<HeightMapGenerator> ().GenerateHeightMap (mapSize);
         material.SetTexture("_heightMap", map);
@@ -60,17 +66,28 @@ public class TerrainGenerator : MonoBehaviour {
 
     private void UpdateNormalMap()
     {
+        if (HeightMap) Graphics.Blit(HeightMap, map);
+        
         var mat = new Material(Shader.Find("Hidden/NormalMap"));
-        mat.SetTexture("_MainTex", map);
-        var bumpEffect = 1;
+        var bumpEffect = BumpEffect;
         float v = bumpEffect * 2f - 1f;
         float z = 1f - v;
         float xy = 1f + v;
         mat.SetVector("_Factor", new Vector4(xy, xy, z, 1));
-        NormalMap = new RenderTexture(map.width, map.height, 0);
+        NormalMap = new RenderTexture(map.width, map.height, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
         NormalMap.hideFlags = HideFlags.DontSave;
         NormalMap.Create();
-        Graphics.Blit(map, NormalMap, mat);
+        if (UseHeight2NormalSoebel)
+        {
+            Debug.Log("sobel");
+            var sobel = new SobelNormalMapFilter() {bumpEffect = BumpEffect};
+            sobel.Apply(map, NormalMap);
+        }
+        else
+        {
+            Debug.Log(mat.shader.name);
+            Graphics.Blit(map, NormalMap, mat);
+        }
         Rend.sharedMaterial.mainTexture = NormalMap;
         material.SetTexture("_NormalMap", NormalMap);
     }

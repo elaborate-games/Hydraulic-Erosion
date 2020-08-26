@@ -41,7 +41,6 @@
 			
 			sampler2D _MainTex;
 			float4 _MainTex_TexelSize;
-
 			float3 _Factor;
 
 			float3 height2normal_sobel(float3x3 c)
@@ -74,58 +73,34 @@
 				float3x3 c;    
 				float col; 
 				col = tex2D(color_map,tc + float2(-d.x,-d.y));
-				c[0][0] = col.r;
+				c[0][0] = (col.r);
 				col = tex2D(color_map,tc + float2( 0,-d.y));
-				c[0][1] = col.r;
+				c[0][1] = (col.r);
 				col = tex2D(color_map,tc + float2( d.x,-d.y));
-				c[0][2] = col.r; 
+				c[0][2] = (col.r); 
        
 				col = tex2D(color_map,tc + float2(-d.x, 0));
-				c[1][0] = col.r;
+				c[1][0] = (col.r);
 				col = tex2D(color_map,tc                );
-				c[1][1] = col.r;
+				c[1][1] = (col.r);
 				col = tex2D(color_map,tc + float2( d.x, 0));
-				c[1][2] = col.r;
+				c[1][2] = (col.r);
        
 				col = tex2D(color_map,tc + float2(-d.x, d.y));
-				c[2][0] = col.r;
+				c[2][0] = (col.r);
 				col = tex2D(color_map,tc + float2( 0, d.y));
-				c[2][1] = col.r;
+				c[2][1] = (col.r);
 				col = tex2D(color_map,tc + float2( d.x, d.y));
-				c[2][2] = col.r;
+				c[2][2] = (col.r);
    
 				return c;
 			}
 
-				// as in https://catlikecoding.com/unity/tutorials/rendering/part-6/
-			float3 calculate_normal(float2 uv)
-			{
-				float texel = 1.0/1024.0;
-				
-				float2 du = float2(texel, 0);
-				float u1 = tex2D(_MainTex, uv - du);
-				float u2 = tex2D(_MainTex, uv + du);
-				// float3 tu = float3(1, u2 - u1, 0);
-
-				float2 dv = float2(0, texel);
-				float v1 = tex2D(_MainTex, uv - dv);
-				float v2 = tex2D(_MainTex, uv + dv);
-				// float3 tv = float3(0, v2 - v1, 1);
-
-				float3 normal = float3(u1 - u2, 1, v1 - v2);
-				return normalize(normal);
-			}
-
 			fixed4 frag (v2f i) : SV_Target
-			{
-				//return fixed4(1,0,0,1);
-				float2 texelSize = _MainTex_TexelSize.xy;
-				texelSize = 1/1024.0;
-				
-				float3 normal = height2normal_sobel(img3x3(_MainTex, i.uv, texelSize));
-				normal = normalize(normal);
-				// normal = calculate_normal(i.uv);
-				return float4(normal, 1);// fixed4(normal.x * 0.5 + 0.5, normal.y * 0.5 + 0.5, normal.z * 0.5 + 0.5, 1);
+			{				
+				float3 normal = height2normal_sobel(img3x3(_MainTex, i.uv, _MainTex_TexelSize.xy));
+				normal = normalize(normal * _Factor.xyz);
+				return fixed4(normal.x * 0.5 + 0.5, normal.y * 0.5 + 0.5, normal.z * 0.5 + 0.5,1);
 			}
 			ENDCG
 		}

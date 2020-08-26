@@ -98,8 +98,6 @@
 
 			fixed4 frag (v2f i) : SV_Target
 			{
-				//return fixed4(1,0,0,1);
-				
 				float3 normal = height2normal_sobel(img3x3(_MainTex, i.uv, _MainTex_TexelSize.xy));
 				normal = normalize(normal * _Factor.xyz);
 				return fixed4(normal.x * 0.5 + 0.5, normal.y * 0.5 + 0.5, normal.z * 0.5 + 0.5,1);

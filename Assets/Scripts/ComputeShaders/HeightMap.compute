@@ -114,6 +114,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         scale *= lacunarity;
         weight *= persistence;
     }
+    // heightMapTexture[id.xy] = saturate(pow(heightMapTexture[id.xy]*1.5, 5));
     int val = int(heightMapTexture[id.xy] * floatToIntMultiplier);
     InterlockedMin(minMax[0],val);
     InterlockedMax(minMax[1],val); 
