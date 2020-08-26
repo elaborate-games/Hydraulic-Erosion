@@ -73,6 +73,7 @@ public class TerrainGenerator : MonoBehaviour {
         float z = 1f - v;
         float xy = 1f + v;
         mat.SetVector("_Factor", new Vector4(xy, xy, z, 1));
+        if(NormalMap != null && NormalMap.IsCreated()) NormalMap.Release();
         NormalMap = new RenderTexture(map.width, map.height, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
         NormalMap.hideFlags = HideFlags.DontSave;
         NormalMap.Create();
