@@ -457,16 +457,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   printTimers: 1
+  meshResolution: 100
   mapSize: 1024
   scale: 5
   elevationScale: 1
   material: {fileID: 2100000, guid: 9c78fd2a4616142389a98dbdd2670aaa, type: 2}
   erosion: {fileID: 7200000, guid: 3d22ccb65deb342569720aedadddf958, type: 3}
-  numErosionIterations: 10000
-  erosionBrushRadius: 3
-  maxLifetime: 30
+  numErosionIterations: 50000
+  erosionBrushRadius: 5
+  maxLifetime: 50
   sedimentCapacityFactor: 4
-  minSedimentCapacity: 0.01
+  minSedimentCapacity: 0.03
   depositSpeed: 0.3
   erodeSpeed: 0.3
   evaporateSpeed: 0.01
