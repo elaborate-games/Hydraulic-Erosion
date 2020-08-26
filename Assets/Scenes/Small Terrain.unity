@@ -406,11 +406,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   forceNewHeightTexture: 1
-  seed: 5
+  seed: 19
   numOctaves: 7
   persistence: 0.4
   lacunarity: 2
-  initialScale: 0.3
+  initialScale: 2
   heightMapComputeShader: {fileID: 7200000, guid: 89aa1db8ee3484dffae04d05d3a5b5e7,
     type: 3}
 --- !u!114 &1074406445
@@ -427,27 +427,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   printTimers: 1
   meshResolution: 256
-  mapSize: 2048
+  mapSize: 4096
   scale: 20
-  elevationScale: 10
   material: {fileID: 2100000, guid: 9c78fd2a4616142389a98dbdd2670aaa, type: 2}
   erosion: {fileID: 7200000, guid: 3d22ccb65deb342569720aedadddf958, type: 3}
   numErosionIterations: 50000
   erosionBrushRadius: 3
-  maxLifetime: 50
+  maxLifetime: 30
   sedimentCapacityFactor: 4
   minSedimentCapacity: 0.01
   depositSpeed: 0.3
   erodeSpeed: 0.3
   evaporateSpeed: 0.01
-  gravity: 4
+  gravity: 0.5
   startSpeed: 1
   startWater: 1
   inertia: 0.05
-  BumpEffect: 0.868
+  BumpEffect: 0.855
   Blur:
-    iteration: 1
-    sampleFactor: 0.2
+    iteration: 6
+    sampleFactor: 1
 --- !u!4 &1074406448
 Transform:
   m_ObjectHideFlags: 0

@@ -15,7 +15,6 @@ public class TerrainGenerator : MonoBehaviour {
     public int meshResolution = 255;
     public int mapSize = 255;
     public float scale = 20;
-    public float elevationScale = 10;
     public Material material;
 
     [Header("Erosion Settings")] 
@@ -45,6 +44,9 @@ public class TerrainGenerator : MonoBehaviour {
     MeshFilter meshFilter;
 
     public RenderTexture NormalMap { get; private set; }
+    
+    [Header("Normal")]
+    [Range(0,1)]
     public float BumpEffect = .5f;
 
     public GaussianBlurFilter Blur;
@@ -73,10 +75,15 @@ public class TerrainGenerator : MonoBehaviour {
         float z = 1f - v;
         float xy = 1f + v;
         mat.SetVector("_Factor", new Vector4(xy, xy, z, 1));
-        if(NormalMap != null && NormalMap.IsCreated()) NormalMap.Release();
-        NormalMap = new RenderTexture(map.width, map.height, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
-        NormalMap.hideFlags = HideFlags.DontSave;
-        NormalMap.Create();
+
+        if (NormalMap == null || NormalMap.width != map.width || NormalMap.height != map.height)
+        {
+            if(NormalMap != null && NormalMap.IsCreated()) NormalMap.Release();
+            NormalMap = new RenderTexture(map.width, map.height, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
+            NormalMap.hideFlags = HideFlags.DontSave;
+            NormalMap.Create();
+        }
+        // Blur.Apply(map, map);
         Graphics.Blit(map, NormalMap, mat);
         material.SetTexture("_NormalMap", NormalMap);
     }
@@ -229,8 +236,6 @@ public class TerrainGenerator : MonoBehaviour {
         AssignMeshComponents ();
         meshFilter.sharedMesh = mesh;
         meshRenderer.sharedMaterial = material;
-
-        material.SetFloat ("_MaxHeight", elevationScale);
     }
 
     private void AssignMeshComponents () {

@@ -58,6 +58,8 @@
 			float4 n = tex2D(_NormalMap, IN.texcoord);
 			n.xyz = UnpackNormal(n);
 			o.Normal = n.xyz;
+
+			float3 worldNormal = mul(unity_ObjectToWorld, float4(n.xyz, 0));;
 			float slope = abs(n.y); // slope = 0 when terrain is completely flat
 
 			float grassBlendHeight = _GrassSlopeThreshold * (1 - _GrassBlendAmount);

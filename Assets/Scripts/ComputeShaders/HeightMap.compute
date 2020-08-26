@@ -1,4 +1,5 @@
 ﻿#pragma kernel CSMain
+#pragma kernel CSNormalizeHeight
 
 RWTexture2D<float> heightMapTexture;
 // RWStructuredBuffer<float> heightMap;
@@ -110,7 +111,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float scale = scaleFactor;
     float weight = 1;
     for (int i = 0; i < octaves; i ++) {
-        heightMapTexture[id.xy] += snoise(float2(x,y)/mapSize * scale + offsets[i]) / (float)octaves;
+        heightMapTexture[id.xy] += snoise(float2(x,y)/mapSize * scale + offsets[i]) * weight;
         scale *= lacunarity;
         weight *= persistence;
     }
@@ -118,4 +119,18 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     int val = int(heightMapTexture[id.xy] * floatToIntMultiplier);
     InterlockedMin(minMax[0],val);
     InterlockedMax(minMax[1],val); 
+}
+
+inline float InverseLerp(float a, float b, float value)
+{
+    return (double) a != (double) b ? saturate((float) (((double) value - (double) a) / ((double) b - (double) a))) : 0.0f;
+}
+
+
+[numthreads(32,32,1)]
+void CSNormalizeHeight (uint3 id : SV_DispatchThreadID)
+{
+    float minValue = (float) minMax[0] / (float) floatToIntMultiplier;
+    float maxValue = (float) minMax[1] / (float) floatToIntMultiplier;
+    heightMapTexture[id.xy] = InverseLerp (minValue, maxValue, heightMapTexture[id.xy]);
 }

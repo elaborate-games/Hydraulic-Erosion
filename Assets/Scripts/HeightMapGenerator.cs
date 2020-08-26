@@ -64,17 +64,22 @@ public class HeightMapGenerator : MonoBehaviour
         var ty = Mathf.CeilToInt(heightMapTexture.height / 32f);
         heightMapComputeShader.Dispatch (0, tx, ty,  1);
 
+
+
+        heightMapComputeShader.SetTexture(1, "heightMapTexture", heightMapTexture);
+        heightMapComputeShader.SetBuffer (1, "minMax", minMaxBuffer);
+        heightMapComputeShader.Dispatch(1, tx, ty, 1);
+
         // mapBuffer.GetData (map);
         // minMaxBuffer.GetData (minMaxHeight);
         // mapBuffer.Release ();
         minMaxBuffer.Release ();
         offsetsBuffer.Release ();
-
         // float minValue = (float) minMaxHeight[0] / (float) floatToIntMultiplier;
         // float maxValue = (float) minMaxHeight[1] / (float) floatToIntMultiplier;
 
         // for (int i = 0; i < map.Length; i++) {
-        //     map[i] = Mathf.InverseLerp (minValue, maxValue, map[i]);
+        // map[i] = Mathf.InverseLerp (minValue, maxValue, map[i]);
         // }
         
         return heightMapTexture;
