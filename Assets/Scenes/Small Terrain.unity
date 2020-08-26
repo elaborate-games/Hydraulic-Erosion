@@ -376,7 +376,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 1e615fdbf14ac7441b32b3d5b23120b7, type: 2}
+  - {fileID: 2100000, guid: 9c78fd2a4616142389a98dbdd2670aaa, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -460,7 +460,7 @@ MonoBehaviour:
   mapSize: 1024
   scale: 5
   elevationScale: 1
-  material: {fileID: 2100000, guid: 1e615fdbf14ac7441b32b3d5b23120b7, type: 2}
+  material: {fileID: 2100000, guid: 9c78fd2a4616142389a98dbdd2670aaa, type: 2}
   erosion: {fileID: 7200000, guid: 3d22ccb65deb342569720aedadddf958, type: 3}
   numErosionIterations: 10000
   erosionBrushRadius: 3
@@ -477,7 +477,7 @@ MonoBehaviour:
   Rend: {fileID: 1840761450}
   HeightMap: {fileID: 2800000, guid: 2ae6498adf645e7478b9f57da2ca1799, type: 3}
   UseHeight2NormalSoebel: 0
-  BumpEffect: 0.723
+  BumpEffect: 0.868
 --- !u!4 &1074406448
 Transform:
   m_ObjectHideFlags: 0

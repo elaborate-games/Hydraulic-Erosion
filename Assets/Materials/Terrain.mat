@@ -63,10 +63,10 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0
     - _GlossyReflections: 1
-    - _GrassBlendAmount: 1
+    - _GrassBlendAmount: 0.309
     - _GrassFlatnessThreshold: 0.1
-    - _GrassSlopeThreshold: 0.075
-    - _HeightScale: 3
+    - _GrassSlopeThreshold: 0.01
+    - _HeightScale: 0
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1

@@ -55,27 +55,14 @@
 			o.Smoothness = 0;
 			o.Alpha = 1;
 
-			float h = tex2D(_heightMap, IN.texcoord);
-			// o.Emission = h;
-			// return;
-
-			// o.Normal = calculate_normal(IN.texcoord);
-			// o.Emission = o.Normal;
-			// return;
-
 			float4 n = tex2D(_NormalMap, IN.texcoord);
-			// o.Emission = n.xyz;
-			o.Albedo = n.xyz;
-			return;
-			o.Normal = n.xyz * 2 - 1; //UnpackNormal(n);// filterNormal(float4(IN.texcoord,0 ,0), _heightMap_TexelSize.xy);
-			o.Emission = o.Normal;
-			float slope = o.Normal.y; // slope = 0 when terrain is completely flat
-			// o.Emission = slope;
-			return;
+			n.xyz = UnpackNormal(n);
+			o.Normal = n.xyz;
+			float slope = abs(n.y); // slope = 0 when terrain is completely flat
 
 			float grassBlendHeight = _GrassSlopeThreshold * (1 - _GrassBlendAmount);
 			float grassWeight = 1 - saturate((slope - grassBlendHeight) / (_GrassSlopeThreshold - grassBlendHeight));
-			o.Emission = _GrassColour * grassWeight + _RockColour * (1 - grassWeight);
+			o.Albedo = _GrassColour * grassWeight + _RockColour * (1 - grassWeight);
 			// o.Albedo = o.Normal;
 			// o.Normal = IN.worldNormal.xyz;
 		}
