@@ -4,5 +4,5 @@ Modified Sebastian Lague's hydraulic erosion project to use height+normal maps i
 
 Before:
 ![Before](https://i.imgur.com/2R8qag3.png)
-After 70k iterations of erosion:
+After erosion:
 ![After](https://i.imgur.com/YQt3lMY.png)
