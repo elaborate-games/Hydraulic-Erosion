@@ -1,3 +1,4 @@
+using Scripts;
 using UnityEngine;
 
 namespace TerrainTools
@@ -24,14 +25,6 @@ namespace TerrainTools
             mat.SetVector(Factor, new Vector4(xy, xy, z, 1));
 
             Graphics.Blit(source, target, mat);
-        }
-
-        public static RenderTexture CreateNormalMapTexture(int width, int height)
-        {
-            var nm = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
-            nm.hideFlags = HideFlags.DontSave;
-            nm.Create();
-            return nm;
         }
     }
 }
