@@ -1,4 +1,4 @@
-﻿Shader "Hidden/NMG/GaussianBlur"
+﻿Shader "Hidden/Erosion/GaussianBlur"
 {
     Properties
     {

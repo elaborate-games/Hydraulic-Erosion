@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: 000546dea28515643ae75b0cd2282887
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - erosion: {fileID: 7200000, guid: 3d22ccb65deb342569720aedadddf958, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

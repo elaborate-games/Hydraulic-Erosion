@@ -479,6 +479,7 @@ GameObject:
   - component: {fileID: 1074406448}
   - component: {fileID: 1074406445}
   - component: {fileID: 1074406444}
+  - component: {fileID: 1074406446}
   m_Layer: 0
   m_Name: Terrain
   m_TagString: Untagged
@@ -523,11 +524,28 @@ MonoBehaviour:
   mapSize: 1024
   scale: 100
   material: {fileID: 2100000, guid: 9c78fd2a4616142389a98dbdd2670aaa, type: 2}
-  erosion: {fileID: 7200000, guid: 3d22ccb65deb342569720aedadddf958, type: 3}
-  numErosionIterations: 500000
+  numErosionIterations: 50000
   erosionBrushRadius: 5
+  BumpEffect: 0.849
+  Blur:
+    iteration: 2
+    sampleFactor: 0.2
+  StepsPerFrame: 5000
+--- !u!114 &1074406446
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1074406443}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 000546dea28515643ae75b0cd2282887, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  erosion: {fileID: 7200000, guid: 3d22ccb65deb342569720aedadddf958, type: 3}
   maxLifetime: 30
-  sedimentCapacityFactor: 4
+  sedimentCapacityFactor: 3
   minSedimentCapacity: 0.01
   depositSpeed: 0.3
   erodeSpeed: 0.3
@@ -535,12 +553,7 @@ MonoBehaviour:
   gravity: 0.5
   startSpeed: 1
   startWater: 1
-  inertia: 0.05
-  BumpEffect: 0.849
-  Blur:
-    iteration: 2
-    sampleFactor: 0.2
-  StepsPerFrame: 5000
+  inertia: 0.3
 --- !u!4 &1074406448
 Transform:
   m_ObjectHideFlags: 0

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
-namespace Height2NormalMap
+
+namespace Erosion
 {
     [System.Serializable]
     public struct GaussianBlurFilter
@@ -9,16 +10,13 @@ namespace Height2NormalMap
         [Range(0, 2)]
         public float sampleFactor;
         private static Material blurMaterial;
+        
         public void Apply(Texture source, RenderTexture destination)
         {
+            if (blurMaterial == null) blurMaterial = new Material(Shader.Find("Hidden/Erosion/GaussianBlur"));
 
-            if (blurMaterial == null)
-            {
-                blurMaterial = new Material(Shader.Find("Hidden/NMG/GaussianBlur"));
-            }
-            RenderTexture rt1, rt2;
-            int w = Mathf.RoundToInt(((float)source.width) * sampleFactor);
-            int h = Mathf.RoundToInt(((float)source.height) * sampleFactor);
+            var w = Mathf.RoundToInt(((float)source.width) * sampleFactor);
+            var h = Mathf.RoundToInt(((float)source.height) * sampleFactor);
             if (w < 1) w = 1;
             if (h < 1) h = 1;
             var rd = new RenderTextureDescriptor(w, h)
@@ -26,8 +24,8 @@ namespace Height2NormalMap
                 sRGB = false
             };
 
-            rt1 = RenderTexture.GetTemporary(rd);
-            rt2 = RenderTexture.GetTemporary(rd);
+            var rt1 = RenderTexture.GetTemporary(rd);
+            var rt2 = RenderTexture.GetTemporary(rd);
             Graphics.Blit(source, rt1);
 
             for (var i = 0; i < iteration; i++)

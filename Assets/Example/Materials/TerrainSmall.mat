@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Terrain
+  m_Name: TerrainSmall
   m_Shader: {fileID: 4800000, guid: 4a9af91d5e55d4ac482fec1726fb7ff3, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
@@ -66,7 +66,7 @@ Material:
     - _GrassBlendAmount: 1
     - _GrassFlatnessThreshold: 0.1
     - _GrassSlopeThreshold: 0.08
-    - _HeightScale: 5
+    - _HeightScale: 10
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
