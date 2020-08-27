@@ -526,10 +526,11 @@ MonoBehaviour:
   material: {fileID: 2100000, guid: 9c78fd2a4616142389a98dbdd2670aaa, type: 2}
   numErosionIterations: 50000
   erosionBrushRadius: 5
-  BumpEffect: 0.849
   Blur:
     iteration: 2
     sampleFactor: 0.2
+  Normal:
+    BumpEffect01: 0.5
   StepsPerFrame: 5000
 --- !u!114 &1074406446
 MonoBehaviour:
