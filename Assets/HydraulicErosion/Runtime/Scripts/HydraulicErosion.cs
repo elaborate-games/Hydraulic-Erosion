@@ -1,13 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Erosion
+namespace TerrainTools
 {
     public class HydraulicErosion : MonoBehaviour
     {
         [SerializeField] private ComputeShader erosion;
-        
+
         public int maxLifetime = 30;
         public float sedimentCapacityFactor = 3;
         public float minSedimentCapacity = .01f;
@@ -18,74 +17,94 @@ namespace Erosion
         public float gravity = 4;
         public float startSpeed = 1;
         public float startWater = 1;
-        [Range (0, 1)]
-        public float inertia = 0.3f;
+        [Range(0, 1)] public float inertia = 0.3f;
 
-        public void Erode(RenderTexture map, int erosionBrushRadius, int mapSize, int numErosionIterations)
+        private ComputeBuffer brushIndexBuffer, brushWeightBuffer, randomIndexBuffer, heightBuffer;
+        private List<int> brushIndexOffsets;
+        private List<float> brushWeights;
+
+        /// <param name="erosionBrushRadius"></param>
+        /// <param name="mapSize">Square map size</param>
+        /// <param name="heightmap"></param>
+        /// <param name="numErosionIterations"></param>
+        public void Erode(RenderTexture heightmap, int erosionBrushRadius, int numErosionIterations)
         {
+            var mapSize = heightmap.width;// * heightmap.height;
+
             var erodeKernel = erosion.FindKernel("CSMain");
             var packKernel = erosion.FindKernel("CSPackHeight");
             var unpackKernel = erosion.FindKernel("CSUnPackHeight");
 
             // Create brush
-            List<int> brushIndexOffsets = new List<int>();
-            List<float> brushWeights = new List<float>();
+            if (brushIndexOffsets == null) brushIndexOffsets = new List<int>();
+            else brushIndexOffsets.Clear();
+
+            if (brushWeights == null) brushWeights = new List<float>();
+            brushWeights.Clear();
 
             float weightSum = 0;
-            for (int brushY = -erosionBrushRadius; brushY <= erosionBrushRadius; brushY++)
+            for (var brushY = -erosionBrushRadius; brushY <= erosionBrushRadius; brushY++)
             {
-                for (int brushX = -erosionBrushRadius; brushX <= erosionBrushRadius; brushX++)
+                for (var brushX = -erosionBrushRadius; brushX <= erosionBrushRadius; brushX++)
                 {
                     float sqrDst = brushX * brushX + brushY * brushY;
                     if (sqrDst < erosionBrushRadius * erosionBrushRadius)
                     {
                         brushIndexOffsets.Add(brushY * mapSize + brushX);
-                        float brushWeight = 1 - Mathf.Sqrt(sqrDst) / erosionBrushRadius;
+                        var brushWeight = 1 - Mathf.Sqrt(sqrDst) / erosionBrushRadius;
                         weightSum += brushWeight;
                         brushWeights.Add(brushWeight);
                     }
                 }
             }
 
-            for (int i = 0; i < brushWeights.Count; i++)
-            {
+            for (var i = 0; i < brushWeights.Count; i++) 
                 brushWeights[i] /= weightSum;
-            }
-
-            Debug.Log("Brush weights: " + brushWeights.Count);
-            if (brushWeights.Count > 500)
-            {
-                Debug.Log("Reduce brush radius to < 500, current: " + brushWeights.Count);
-                return;
-            }
 
             // Send brush data to compute shader
-            ComputeBuffer brushIndexBuffer = new ComputeBuffer(brushIndexOffsets.Count, sizeof(int));
-            ComputeBuffer brushWeightBuffer = new ComputeBuffer(brushWeights.Count, sizeof(int));
+            if (brushIndexBuffer == null || !brushIndexBuffer.IsValid() || brushIndexBuffer.count != brushIndexOffsets.Count)
+            {
+                if (brushIndexBuffer != null && brushIndexBuffer.IsValid()) brushIndexBuffer.Release();
+                brushIndexBuffer = new ComputeBuffer(brushIndexOffsets.Count, sizeof(int));
+            }
             brushIndexBuffer.SetData(brushIndexOffsets);
-            brushWeightBuffer.SetData(brushWeights);
             erosion.SetBuffer(0, "brushIndices", brushIndexBuffer);
+
+            if (brushWeightBuffer == null || !brushWeightBuffer.IsValid() || brushWeightBuffer.count != brushWeights.Count)
+            {
+                if (brushWeightBuffer != null && brushWeightBuffer.IsValid()) brushWeightBuffer.Release();
+                brushWeightBuffer = new ComputeBuffer(brushWeights.Count, sizeof(int));
+            }
+            brushWeightBuffer.SetData(brushWeights);
             erosion.SetBuffer(0, "brushWeights", brushWeightBuffer);
 
             // Generate random indices for droplet placement
-            int[] randomIndices = new int[numErosionIterations];
-            for (int i = 0; i < numErosionIterations; i++)
+            var randomIndices = new int[numErosionIterations];
+            for (var i = 0; i < numErosionIterations; i++)
             {
-                int randomX = Random.Range(erosionBrushRadius, mapSize + erosionBrushRadius);
-                int randomY = Random.Range(erosionBrushRadius, mapSize + erosionBrushRadius);
+                var randomX = Random.Range(erosionBrushRadius, mapSize + erosionBrushRadius);
+                var randomY = Random.Range(erosionBrushRadius, mapSize + erosionBrushRadius);
                 randomIndices[i] = randomY * mapSize + randomX;
             }
 
             // Send random indices to compute shader
-            ComputeBuffer randomIndexBuffer = new ComputeBuffer(randomIndices.Length, sizeof(int));
+            if (randomIndexBuffer == null || !randomIndexBuffer.IsValid() || randomIndexBuffer.count != randomIndices.Length)
+            {
+                if (randomIndexBuffer != null && randomIndexBuffer.IsValid()) randomIndexBuffer.Release();
+                randomIndexBuffer = new ComputeBuffer(randomIndices.Length, sizeof(int));
+            }
             randomIndexBuffer.SetData(randomIndices);
-            // erosion.SetBuffer (packKernel, "randomIndices", randomIndexBuffer);
             erosion.SetBuffer(erodeKernel, "randomIndices", randomIndexBuffer);
-            // erosion.SetBuffer (unpackKernel, "randomIndices", randomIndexBuffer);
 
             // Heightmap buffer
-            ComputeBuffer mapBuffer = new ComputeBuffer(map.width * map.height, sizeof(float));
-            erosion.SetBuffer(erodeKernel, "map", mapBuffer);
+            var heightBufferSize = heightmap.width * heightmap.height;
+            if (heightBuffer == null || !heightBuffer.IsValid() || heightBuffer.count != heightBufferSize)
+            {
+                if (heightBuffer != null && heightBuffer.IsValid()) heightBuffer.Release();
+                heightBuffer = new ComputeBuffer(heightBufferSize, sizeof(float));
+            }
+
+            erosion.SetBuffer(erodeKernel, "map", heightBuffer);
 
             // Settings
             erosion.SetInt("borderSize", erosionBrushRadius);
@@ -101,29 +120,31 @@ namespace Erosion
             erosion.SetFloat("gravity", gravity);
             erosion.SetFloat("startSpeed", startSpeed);
             erosion.SetFloat("startWater", startWater);
+            
+            erosion.SetBuffer(packKernel, "map", heightBuffer);
+            erosion.SetTexture(packKernel, "heightTexture", heightmap);
+            erosion.SetBuffer(unpackKernel, "map", heightBuffer);
+            erosion.SetTexture(unpackKernel, "heightTexture", heightmap);
 
-            erosion.SetBuffer(packKernel, "map", mapBuffer);
-            erosion.SetTexture(packKernel, "heightTexture", map);
-            erosion.SetBuffer(unpackKernel, "map", mapBuffer);
-            erosion.SetTexture(unpackKernel, "heightTexture", map);
-
-            var threadsPackingX = Mathf.CeilToInt(map.width / 32f);
-            var threadsPackingY = Mathf.CeilToInt(map.height / 32f);
-
-            // pack
+            var threadsPackingX = Mathf.CeilToInt(heightmap.width / 32f);
+            var threadsPackingY = Mathf.CeilToInt(heightmap.height / 32f);
             erosion.Dispatch(packKernel, threadsPackingX, threadsPackingY, 1);
-
             var erodeThreads = Mathf.CeilToInt(numErosionIterations / 1024f);
             erosion.Dispatch(erodeKernel, erodeThreads, 1, 1);
-
-            // unpack
             erosion.Dispatch(unpackKernel, threadsPackingX, threadsPackingY, 1);
+        }
 
+        public void ReleaseBuffers()
+        {
             // Release buffers
-            mapBuffer.Release();
-            randomIndexBuffer.Release();
-            brushIndexBuffer.Release();
-            brushWeightBuffer.Release();
+            if (heightBuffer != null && heightBuffer.IsValid())
+                heightBuffer.Release();
+            if (randomIndexBuffer != null && randomIndexBuffer.IsValid())
+                randomIndexBuffer.Release();
+            if (brushIndexBuffer != null && brushIndexBuffer.IsValid())
+                brushIndexBuffer.Release();
+            if (brushWeightBuffer != null && brushWeightBuffer.IsValid())
+                brushWeightBuffer.Release();
         }
     }
 }

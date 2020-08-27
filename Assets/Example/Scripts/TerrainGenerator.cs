@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using Erosion;
+using TerrainTools;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -31,8 +31,8 @@ public class TerrainGenerator : MonoBehaviour {
     
     [Header("Normal")]
     [Range(0,1)]
-    public float BumpEffect = .5f;
     public GaussianBlurFilter Blur;
+    public NormalMapFilterRFloat Normal;
 
     [Header("Runtime")] 
     public int StepsPerFrame = 5000;
@@ -60,6 +60,7 @@ public class TerrainGenerator : MonoBehaviour {
     
     private int totalSteps;
     private Stopwatch sw = new Stopwatch();
+    
     private void Update()
     {
         if (!Application.isPlaying) return;
@@ -85,19 +86,12 @@ public class TerrainGenerator : MonoBehaviour {
 
     public void Erode()
     {
-        Erosion.Erode(map, erosionBrushRadius, mapSize, numErosionIterations);
+        Erosion.Erode(map, erosionBrushRadius, numErosionIterations);
         UpdateNormalMap();
     }
 
     private void UpdateNormalMap()
     {
-        var mat = new Material(Shader.Find("Hidden/NormalMap"));
-        var bumpEffect = BumpEffect;
-        float v = bumpEffect * 2f - 1f;
-        float z = 1f - v;
-        float xy = 1f + v;
-        mat.SetVector("_Factor", new Vector4(xy, xy, z, 1));
-
         if (NormalMap == null || NormalMap.width != map.width || NormalMap.height != map.height)
         {
             if(NormalMap != null && NormalMap.IsCreated()) NormalMap.Release();
@@ -105,8 +99,7 @@ public class TerrainGenerator : MonoBehaviour {
             NormalMap.hideFlags = HideFlags.DontSave;
             NormalMap.Create();
         }
-        // Blur.Apply(map, map);
-        Graphics.Blit(map, NormalMap, mat);
+        Normal.Apply(map, NormalMap);
         material.SetTexture("_NormalMap", NormalMap);
     }
 
@@ -114,20 +107,20 @@ public class TerrainGenerator : MonoBehaviour {
 
     public void ContructMesh () 
     {
-        Vector3[] verts = new Vector3[meshResolution * meshResolution];
-        int[] triangles = new int[(meshResolution - 1) * (meshResolution-1) * 6];
-        int t = 0;
+        var verts = new Vector3[meshResolution * meshResolution];
+        var triangles = new int[(meshResolution - 1) * (meshResolution-1) * 6];
+        var t = 0;
         
-        Vector2[] uvs = new Vector2[verts.Length];
+        var uvs = new Vector2[verts.Length];
 
-        for (int i = 0; i < meshResolution * meshResolution; i++) {
-            int x = i % meshResolution;
-            int y = i / meshResolution;
-            int borderedMapIndex = (y + erosionBrushRadius) * mapSizeWithBorder + x + erosionBrushRadius;
-            int meshMapIndex = y * meshResolution + x;
+        for (var i = 0; i < meshResolution * meshResolution; i++) {
+            var x = i % meshResolution;
+            var y = i / meshResolution;
+            var borderedMapIndex = (y + erosionBrushRadius) * mapSizeWithBorder + x + erosionBrushRadius;
+            var meshMapIndex = y * meshResolution + x;
 
-            Vector2 percent = new Vector2 (x / (meshResolution - 1f), y / (meshResolution - 1f));
-            Vector3 pos = new Vector3 (percent.x * 2 - 1, 0, percent.y * 2 - 1) * scale;
+            var percent = new Vector2 (x / (meshResolution - 1f), y / (meshResolution - 1f));
+            var pos = new Vector3 (percent.x * 2 - 1, 0, percent.y * 2 - 1) * scale;
 
             // float normalizedHeight = map[borderedMapIndex];
             // pos += Vector3.up * normalizedHeight * elevationScale;
@@ -168,8 +161,8 @@ public class TerrainGenerator : MonoBehaviour {
 
     private void AssignMeshComponents () {
         // Find/creator mesh holder object in children
-        string meshHolderName = "Mesh Holder";
-        Transform meshHolder = transform.Find (meshHolderName);
+        var meshHolderName = "Mesh Holder";
+        var meshHolder = transform.Find (meshHolderName);
         if (meshHolder == null) {
             meshHolder = new GameObject (meshHolderName).transform;
             meshHolder.transform.parent = transform;

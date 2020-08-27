@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Erosion
+namespace TerrainTools
 {
     [System.Serializable]
     public struct GaussianBlurFilter

@@ -1,11 +1,9 @@
 ﻿using UnityEngine;
 
-namespace ErosionCPU
+namespace TerrainTools.CPU
 {
-
-    public class Erosion : MonoBehaviour
+    public class HydraulicErosionCpu : MonoBehaviour
     {
-
         public int seed;
         [Range(2, 8)] public int erosionRadius = 3;
         [Range(0, 1)] public float inertia = .05f; // At zero, water will instantly change direction to flow downhill. At 1, water will never change direction. 
