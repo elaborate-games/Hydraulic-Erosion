@@ -1,0 +1,9 @@
+{
+    "displayName" : "Hydraulic Erosion",
+    "name" : "com.elaborate.erosion",
+    "version" : "1.0.0",
+    "description" : "Hydraulic Erosion package based off of Sebastian Lague's work here https://github.com/SebLague/Hydraulic-Erosion",
+    "repository": {
+        "url": "https://github.com/SebLague/Hydraulic-Erosion"
+    }
+}
