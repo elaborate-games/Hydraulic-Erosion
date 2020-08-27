@@ -3,9 +3,13 @@ using UnityEngine;
 
 namespace TerrainTools
 {
-    public class HydraulicErosion : MonoBehaviour
+    [System.Serializable]
+    public class HydraulicErosion
     {
         [SerializeField] private ComputeShader erosion;
+
+        public int erosionBrushRadius = 5;
+        public int numErosionIterations = 50000;
 
         public int maxLifetime = 30;
         public float sedimentCapacityFactor = 3;
@@ -27,7 +31,7 @@ namespace TerrainTools
         /// <param name="mapSize">Square map size</param>
         /// <param name="heightmap"></param>
         /// <param name="numErosionIterations"></param>
-        public void Erode(RenderTexture heightmap, int erosionBrushRadius, int numErosionIterations)
+        public void Erode(RenderTexture heightmap)
         {
             var mapSize = heightmap.width;// * heightmap.height;
 
