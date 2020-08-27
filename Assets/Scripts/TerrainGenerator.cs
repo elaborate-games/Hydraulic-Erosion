@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Principal;
 using Height2NormalMap;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
+using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 [ExecuteAlways]
@@ -48,8 +50,10 @@ public class TerrainGenerator : MonoBehaviour {
     [Header("Normal")]
     [Range(0,1)]
     public float BumpEffect = .5f;
-
     public GaussianBlurFilter Blur;
+
+    [Header("Runtime")] 
+    public int StepsPerFrame = 5000;
 
     private void Start()
     {
@@ -58,8 +62,24 @@ public class TerrainGenerator : MonoBehaviour {
         Erode();
     }
 
-    public void GenerateHeightMap () 
+    private int totalSteps;
+    private Stopwatch sw = new Stopwatch();
+    private void Update()
     {
+        if (!Application.isPlaying) return;
+        if (StepsPerFrame <= 0) return;
+        numErosionIterations = StepsPerFrame;
+        sw.Start();
+        Erode();
+        var ms = sw.ElapsedMilliseconds;
+        sw.Reset();
+        totalSteps += numErosionIterations;
+        Debug.Log("Total: " + totalSteps + " in " + ms + "ms");
+    }
+
+    public void GenerateHeightMap ()
+    {
+        totalSteps = 0;
         mapSizeWithBorder = mapSize + erosionBrushRadius * 2;
         map = FindObjectOfType<HeightMapGenerator> ().GenerateHeightMap (mapSize);
         Blur.Apply(map, map);
@@ -167,8 +187,6 @@ public class TerrainGenerator : MonoBehaviour {
         erosion.SetTexture(packKernel, "heightTexture", map);
         erosion.SetBuffer (unpackKernel, "map", mapBuffer);
         erosion.SetTexture(unpackKernel, "heightTexture", map);
-        
-        Debug.Log(map.width + ", " + map.height + ", " + mapSize + ", " + mapSizeWithBorder);
         
         var threadsPackingX = Mathf.CeilToInt(map.width / 32f);
         var threadsPackingY = Mathf.CeilToInt(map.height / 32f);
