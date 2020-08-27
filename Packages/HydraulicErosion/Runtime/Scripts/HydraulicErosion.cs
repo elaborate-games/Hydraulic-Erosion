@@ -55,7 +55,6 @@ namespace TerrainTools
                     if (sqrDst < erosionBrushRadius * erosionBrushRadius)
                     {
                         var offset = brushY * mapSize + brushX;
-                        Debug.Log(offset);
                         brushIndexOffsets.Add(offset);
                         var brushWeight = 1 - Mathf.Sqrt(sqrDst) / erosionBrushRadius;
                         weightSum += brushWeight;
