@@ -96,10 +96,30 @@
 				return c;
 			}
 
+			float3 Unity_NormalFromTexture_float(sampler2D tex, float2 UV, float Offset, float Strength)
+			{
+			    Offset = pow(Offset, 3) * 0.1;
+			    float2 offsetU = float2(UV.x + Offset, UV.y);
+			    float2 offsetV = float2(UV.x, UV.y + Offset);
+			    float normalSample = tex2D(tex, UV).r;
+			    float uSample = tex2D(tex, offsetU).r;
+			    float vSample = tex2D(tex, offsetV).r;
+			    float3 va = float3(1, 0, (uSample - normalSample) * Strength);
+			    float3 vb = float3(0, 1, (vSample - normalSample) * Strength);
+			    return  normalize(cross(va, vb));
+			}
+
 			fixed4 frag(v2f i) : SV_Target
 			{
+				// float3 normal = Unity_NormalFromTexture_float(_MainTex, i.uv, _MainTex_TexelSize.x * 200, 10);
+				// normal = normalize(normal);
+				// fixed4 n = fixed4(normal.x * 0.5 + 0.5, normal.y * 0.5 + 0.5, normal.z * 0.5 + 0.5, 1);
+				// return n;
+				
 				float3 normal = height2normal_sobel(img3x3(_MainTex, i.uv, _MainTex_TexelSize.xy));
-				normal = normalize(normal * _Factor.xyz);
+				normal = normal * _Factor.xyz;
+				// normal = float3(normal.xy, normal.z * .5);
+				normal = normalize(normal);
 				fixed4 n = fixed4(normal.x * 0.5 + 0.5, normal.y * 0.5 + 0.5, normal.z * 0.5 + 0.5, 1);
 				return n;
 			}
