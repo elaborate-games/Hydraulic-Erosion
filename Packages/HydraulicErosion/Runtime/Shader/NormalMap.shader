@@ -63,8 +63,11 @@
 				float cy = y[0][0] + y[0][1] + y[0][2]
 					+ y[2][0] + y[2][1] + y[2][2];
 
-				float cz = sqrt(1 - (cx * cx + cy * cy));
-
+				float cz;
+				// cz = sqrt(1 - (cx * cx + cy * cy));
+				// HACK to fix black spots
+				cz = 1;
+				
 				return float3(cx, cy, cz);
 			}
 
@@ -118,6 +121,7 @@
 				
 				float3 normal = height2normal_sobel(img3x3(_MainTex, i.uv, _MainTex_TexelSize.xy));
 				normal = normal * _Factor.xyz;
+				normal.y *= -1;
 				// normal = float3(normal.xy, normal.z * .5);
 				normal = normalize(normal);
 				fixed4 n = fixed4(normal.x * 0.5 + 0.5, normal.y * 0.5 + 0.5, normal.z * 0.5 + 0.5, 1);
