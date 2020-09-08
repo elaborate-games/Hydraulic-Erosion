@@ -9,10 +9,13 @@ namespace TerrainTools
         public int iteration;
         [Range(0, 2)]
         public float sampleFactor;
+        
         private static Material blurMaterial;
         
         public void Apply(Texture source, RenderTexture destination)
         {
+            if(sampleFactor <= 0 || iteration <= 0) return;
+            
             if (blurMaterial == null) blurMaterial = new Material(Shader.Find("Hidden/Erosion/GaussianBlur"));
 
             var w = Mathf.RoundToInt(((float)source.width) * sampleFactor);
