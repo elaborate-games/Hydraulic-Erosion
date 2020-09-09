@@ -26,6 +26,8 @@ namespace TerrainTools
             {
                 sRGB = false
             };
+            rd.graphicsFormat = source.graphicsFormat;
+            rd.dimension = source.dimension;
 
             var rt1 = RenderTexture.GetTemporary(rd);
             var rt2 = RenderTexture.GetTemporary(rd);
