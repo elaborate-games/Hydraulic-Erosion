@@ -121,7 +121,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     InterlockedMax(minMax[1],val); 
 }
 
-inline float InverseLerp(float a, float b, float value)
+inline float inverse_lerp(float a, float b, float value)
 {
     return (double) a != (double) b ? saturate((float) (((double) value - (double) a) / ((double) b - (double) a))) : 0.0f;
 }
@@ -132,5 +132,5 @@ void CSNormalizeHeight (uint3 id : SV_DispatchThreadID)
 {
     float minValue = (float) minMax[0] / (float) floatToIntMultiplier;
     float maxValue = (float) minMax[1] / (float) floatToIntMultiplier;
-    heightMapTexture[id.xy] = InverseLerp (minValue, maxValue, heightMapTexture[id.xy]);
+    heightMapTexture[id.xy] = inverse_lerp (minValue, maxValue, heightMapTexture[id.xy]);
 }

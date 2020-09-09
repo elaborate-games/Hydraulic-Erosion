@@ -11,6 +11,7 @@ namespace TerrainTools
     {
         private static Material mat;
 
+        [Range(0, 0.999f)]
         public float BumpEffect01;
         private static readonly int Factor = Shader.PropertyToID("_Factor");
 
