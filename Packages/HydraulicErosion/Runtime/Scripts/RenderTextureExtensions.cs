@@ -21,6 +21,8 @@ namespace Scripts
         public static void Ensure(this RenderTexture tex, ref RenderTexture reference, int width, int height,
             int depth, RenderTextureFormat format, RenderTextureReadWrite space, FilterMode filter, bool randomWrite = false)
         {
+            if (format == RenderTextureFormat.Default) format = RenderTextureFormat.ARGB32;
+            
             if (reference == null ||
                 !reference.IsCreated() ||
                 reference.width != width ||
@@ -31,8 +33,9 @@ namespace Scripts
                 reference.filterMode != filter ||
                 randomWrite != reference.enableRandomWrite)
             {
+                // Debug.Log(format + " + " + reference.format);
                 if (reference && reference.IsCreated()) reference.Release();
-                Debug.Log("Create new RenderTexture");
+                Debug.Log("Create new RenderTexture: " + reference, tex);
                 reference = new RenderTexture(width, height, depth, format, space);
                 reference.filterMode = filter;
                 reference.enableRandomWrite = randomWrite;
