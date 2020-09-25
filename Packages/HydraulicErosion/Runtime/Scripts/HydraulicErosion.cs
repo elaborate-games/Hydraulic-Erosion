@@ -105,7 +105,7 @@ namespace TerrainTools
             var heightBufferSize = heightmap.width * heightmap.height;
             if (heightBuffer == null || !heightBuffer.IsValid() || heightBuffer.count != heightBufferSize)
             {
-                if (heightBuffer != null && heightBuffer.IsValid()) heightBuffer.Release();
+                heightBuffer?.Release();
                 heightBuffer = new ComputeBuffer(heightBufferSize, sizeof(float));
             }
 
