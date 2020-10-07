@@ -69,7 +69,7 @@ namespace TerrainTools
             // Send brush data to compute shader
             if (brushIndexBuffer == null || !brushIndexBuffer.IsValid() || brushIndexBuffer.count != brushIndexOffsets.Count)
             {
-                if (brushIndexBuffer != null && brushIndexBuffer.IsValid()) brushIndexBuffer.Release();
+                brushIndexBuffer?.Release();
                 brushIndexBuffer = new ComputeBuffer(brushIndexOffsets.Count, sizeof(int));
             }
             brushIndexBuffer.SetData(brushIndexOffsets);
@@ -77,7 +77,7 @@ namespace TerrainTools
 
             if (brushWeightBuffer == null || !brushWeightBuffer.IsValid() || brushWeightBuffer.count != brushWeights.Count)
             {
-                if (brushWeightBuffer != null && brushWeightBuffer.IsValid()) brushWeightBuffer.Release();
+                brushWeightBuffer?.Release();
                 brushWeightBuffer = new ComputeBuffer(brushWeights.Count, sizeof(int));
             }
             brushWeightBuffer.SetData(brushWeights);
@@ -95,7 +95,7 @@ namespace TerrainTools
             // Send random indices to compute shader
             if (randomIndexBuffer == null || !randomIndexBuffer.IsValid() || randomIndexBuffer.count != randomIndices.Length)
             {
-                if (randomIndexBuffer != null && randomIndexBuffer.IsValid()) randomIndexBuffer.Release();
+                randomIndexBuffer?.Release();
                 randomIndexBuffer = new ComputeBuffer(randomIndices.Length, sizeof(int));
             }
             randomIndexBuffer.SetData(randomIndices);
