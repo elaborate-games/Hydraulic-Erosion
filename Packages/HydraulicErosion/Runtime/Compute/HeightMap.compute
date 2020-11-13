@@ -55,13 +55,13 @@ float3 taylorInvSqrt(float3 r)
 
 float snoise(float2 v)
 {
-    const float4 C = float4( 0.211324865405187,  // (3.0-sqrt(3.0))/6.0
-                             0.366025403784439,  // 0.5*(sqrt(3.0)-1.0)
-                            -0.577350269189626,  // -1.0 + 2.0 * C.x
-                             0.024390243902439); // 1.0 / 41.0
+    const float4 C = float4(0.211324865405187, // (3.0-sqrt(3.0))/6.0
+                            0.366025403784439, // 0.5*(sqrt(3.0)-1.0)
+                            -0.577350269189626, // -1.0 + 2.0 * C.x
+                            0.024390243902439); // 1.0 / 41.0
     // First corner
-    float2 i  = floor(v + dot(v, C.yy));
-    float2 x0 = v -   i + dot(i, C.xx);
+    float2 i = floor(v + dot(v, C.yy));
+    float2 x0 = v - i + dot(i, C.xx);
 
     // Other corners
     float2 i1;
@@ -76,8 +76,8 @@ float snoise(float2 v)
     // Permutations
     i = mod289(i); // Avoid truncation effects in permutation
     float3 p =
-      permute(permute(i.y + float3(0.0, i1.y, 1.0))
-                    + i.x + float3(0.0, i1.x, 1.0));
+        permute(permute(i.y + float3(0.0, i1.y, 1.0))
+            + i.x + float3(0.0, i1.x, 1.0));
 
     float3 m = max(0.5 - float3(dot(x0, x0), dot(x1, x1), dot(x2, x2)), 0.0);
     m = m * m;
@@ -103,34 +103,35 @@ float snoise(float2 v)
 
 
 [numthreads(32,32,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
+void CSMain(uint3 id : SV_DispatchThreadID)
 {
-    int x = id.x;// % mapSize;
-    int y = id.y;// / mapSize;
+    int x = id.x; // % mapSize;
+    int y = id.y; // / mapSize;
 
     float scale = scaleFactor;
     float weight = 1;
-    for (int i = 0; i < octaves; i ++) {
-        heightMapTexture[id.xy] += snoise(float2(x,y)/mapSize * scale + offsets[i]) * weight;
+    for (int i = 0; i < octaves; i ++)
+    {
+        heightMapTexture[id.xy] += snoise(float2(x, y) / mapSize * scale + offsets[i]) * weight;
         scale *= lacunarity;
         weight *= persistence;
     }
     // heightMapTexture[id.xy] = saturate(pow(heightMapTexture[id.xy]*1.5, 5));
     int val = int(heightMapTexture[id.xy] * floatToIntMultiplier);
-    InterlockedMin(minMax[0],val);
-    InterlockedMax(minMax[1],val); 
+    InterlockedMin(minMax[0], val);
+    InterlockedMax(minMax[1], val);
 }
 
 inline float inverse_lerp(float a, float b, float value)
 {
-    return (double) a != (double) b ? saturate((float) (((double) value - (double) a) / ((double) b - (double) a))) : 0.0f;
+    return (double)a != (double)b ? saturate((float)(((double)value - (double)a) / ((double)b - (double)a))) : 0.0f;
 }
 
 
 [numthreads(32,32,1)]
-void CSNormalizeHeight (uint3 id : SV_DispatchThreadID)
+void CSNormalizeHeight(uint3 id : SV_DispatchThreadID)
 {
-    float minValue = (float) minMax[0] / (float) floatToIntMultiplier;
-    float maxValue = (float) minMax[1] / (float) floatToIntMultiplier;
-    heightMapTexture[id.xy] = inverse_lerp (minValue, maxValue, heightMapTexture[id.xy]);
+    float minValue = (float)minMax[0] / (float)floatToIntMultiplier;
+    float maxValue = (float)minMax[1] / (float)floatToIntMultiplier;
+    heightMapTexture[id.xy] = inverse_lerp(minValue, maxValue, heightMapTexture[id.xy]);
 }

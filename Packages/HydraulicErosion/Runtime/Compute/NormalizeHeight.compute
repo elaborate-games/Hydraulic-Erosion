@@ -8,14 +8,14 @@ int float_to_int_multiplier;
 int min_border_distance;
 
 [numthreads(32,32,1)]
-void cs_minmax (uint3 id : SV_DispatchThreadID)
+void cs_minmax(uint3 id : SV_DispatchThreadID)
 {
     uint width, height;
     height_map.GetDimensions(width, height);
-    if(id.x < min_border_distance || id.x >= width || id.y < min_border_distance || id.y >= height) return;
+    if (id.x < min_border_distance || id.x >= width || id.y < min_border_distance || id.y >= height) return;
     int val = int(height_map[id.xy] * float_to_int_multiplier);
-    InterlockedMin(min_max[0],val);
-    InterlockedMax(min_max[1],val); 
+    InterlockedMin(min_max[0], val);
+    InterlockedMax(min_max[1], val);
 }
 
 
@@ -31,15 +31,15 @@ inline float remap(float origFrom, float origTo, float targetFrom, float targetT
 }
 
 [numthreads(32,32,1)]
-void cs_normalize (uint3 id : SV_DispatchThreadID)
+void cs_normalize(uint3 id : SV_DispatchThreadID)
 {
     uint width, height;
     height_map.GetDimensions(width, height);
-    if(id.x >= width || id.y >= height) return;
-    float minValue0 = (float) min_max[0] / (float) float_to_int_multiplier;
-    float maxValue0 = (float) min_max[1] / (float) float_to_int_multiplier;
+    if (id.x >= width || id.y >= height) return;
+    float minValue0 = (float)min_max[0] / (float)float_to_int_multiplier;
+    float maxValue0 = (float)min_max[1] / (float)float_to_int_multiplier;
     // height_map[id.xy] = inv_lerp(minValue0, maxValue0, height_map[id.xy]);
-    float minValue1 = (float) min_max1[0] / (float) float_to_int_multiplier;
-    float maxValue1 = (float) min_max1[1] / (float) float_to_int_multiplier;
+    float minValue1 = (float)min_max1[0] / (float)float_to_int_multiplier;
+    float maxValue1 = (float)min_max1[1] / (float)float_to_int_multiplier;
     height_map[id.xy] = remap(minValue0, maxValue0, minValue1, maxValue1, height_map[id.xy]);
 }
