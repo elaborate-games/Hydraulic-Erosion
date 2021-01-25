@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace TerrainTools
@@ -26,6 +27,21 @@ namespace TerrainTools
 		private ComputeBuffer brushIndexBuffer, brushWeightBuffer, randomIndexBuffer, heightBuffer;
 		private List<int> brushIndexOffsets;
 		private List<float> brushWeights;
+
+		private static float[] randomBuffer;
+		private int randomIndex = 0;
+
+		private float GetRandom()
+		{
+			if (randomBuffer == null)
+			{
+				randomBuffer = new float[10000];
+				for (var i = 0; i < randomBuffer.Length; i++)
+					randomBuffer[i] = Random.value;
+			}
+			randomIndex += 1;
+			return randomBuffer[randomIndex % randomBuffer.Length];
+		}
 
 		/// <param name="erosionBrushRadius"></param>
 		/// <param name="mapSize">Square map size</param>
@@ -89,8 +105,8 @@ namespace TerrainTools
 			var randomIndices = new int[numErosionIterations];
 			for (var i = 0; i < numErosionIterations; i++)
 			{
-				var randomX = Random.Range(erosionBrushRadius, mapSize + erosionBrushRadius);
-				var randomY = Random.Range(erosionBrushRadius, mapSize + erosionBrushRadius);
+				var randomX = (int)Mathf.LerpUnclamped(erosionBrushRadius, mapSize + erosionBrushRadius, GetRandom());
+				var randomY =  (int)Mathf.LerpUnclamped(erosionBrushRadius, mapSize + erosionBrushRadius, GetRandom());
 				randomIndices[i] = randomY * mapSize + randomX;
 			}
 
