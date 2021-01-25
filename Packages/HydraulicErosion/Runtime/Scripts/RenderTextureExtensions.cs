@@ -33,9 +33,8 @@ namespace Scripts
 			    reference.filterMode != filter ||
 			    randomWrite != reference.enableRandomWrite)
 			{
-				// Debug.Log(format + " + " + reference.format);
+				// Debug.Log("Create new RenderTexture: " + reference, tex);
 				if (reference && reference.IsCreated()) reference.Release();
-				Debug.Log("Create new RenderTexture: " + reference, tex);
 				reference = new RenderTexture(width, height, depth, format, space);
 				reference.filterMode = filter;
 				reference.enableRandomWrite = randomWrite;
